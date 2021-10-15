@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>hw01</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+	</head>
+	<body>
+
+		<script src="./opentype.min.js"></script>
+		<script src="./three.min.js"></script>
+		<script src="./TTFLoader.js"></script>
+		
+		<script>
+
+			let container;
+			let camera, cameraTarget, scene, renderer;
+			let group, textMesh1, textGeo, material;
+
+			let text, hover, angle = 0, far = -150, size = 28;
+			const height = 5,
+				curveSegments = 4,
+				bevelThickness = 2,
+				bevelSize = 1.5;
+
+			let font = null;
+
+			let windowHalfX = window.innerWidth / 2;
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				// CAMERA
+
+				camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 1500 );
+				camera.position.set( 0, 175, 800 );
+
+				cameraTarget = new THREE.Vector3( 0, 175, 0 );
+
+				// SCENE
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0x000000 );
+				scene.fog = new THREE.Fog( 0x000000, 250, 1400 );
+
+				// LIGHTS
+
+				const dirLight = new THREE.DirectionalLight( 0xffffff, 0.125 );
+				dirLight.position.set( 0, 0, 1 ).normalize();
+				scene.add( dirLight );
+
+				const pointLight = new THREE.PointLight( 0xffffff, 1.5 );
+				pointLight.position.set( 0, 100, 90 );
+				pointLight.color.setHSL( 0.58, 1, 1 );
+				scene.add( pointLight );
+
+				material = new THREE.MeshPhongMaterial( { color: 0x53ff53, flatShading: true } );
+
+				group = new THREE.Group();
+				group.position.y = 100;
+
+				scene.add( group );
+				
+				const loader = new THREE.TTFLoader();
+
+				loader.load( './edukai-4.0.ttf', function ( json ) {
+				console.log(json)
+					font = new THREE.Font( json );
+
+					text = '子';
+					hover = 285.5;
+					createText();
+
+					text = '亥        丑';
+					hover = 258;
+					createText();
+
+					text = '戌              寅';
+					hover = 203;
+					createText();
+
+					text = '酉                 卯';
+					hover = 115;
+					createText();
+
+					text = '申              辰';
+					hover = 27;
+					createText();
+
+					text = '未        巳';
+					hover = -28;
+					createText();
+
+					text = '午';
+					hover = -55.5;
+					createText();
+
+					material = new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } );
+
+					angle = - Math.PI / 3;
+					size = 36;
+					text = '高等計算機圖學作業';
+					hover = -65;
+					far = 150;
+					createText();
+
+				} );
+
+				const plane = new THREE.Mesh(
+					new THREE.PlaneGeometry( 750, 300 ),
+					new THREE.MeshBasicMaterial( { color: 0xffffff } )
+				);
+				plane.position.y = 25;
+				plane.position.z = -220;
+				plane.rotation.x = - Math.PI / 3;
+				scene.add( plane );
+
+				const circle = new THREE.Mesh(
+					new THREE.CircleGeometry( 205, 64 ),
+					new THREE.MeshBasicMaterial( { color: 0x2828ff, opacity: 0.6, transparent: true } )
+				)
+				circle.position.x = 5;
+				circle.position.y = 225;
+				circle.position.z = -160;
+				scene.add( circle );
+
+				const cube1 = new THREE.Mesh(
+					new THREE.BoxGeometry( 180, 2, 1 ),
+					new THREE.MeshBasicMaterial( { color: 0xffffff } )
+				)
+
+				/*cube1.position.x = 5;
+				cube1.position.y = 295;
+				cube1.position.z = -140;
+				cube1.rotation.z = Math.PI / 2;
+
+				const cube2 = new THREE.Mesh(
+					new THREE.BoxGeometry( 150, 6, 1 ),
+					new THREE.MeshBasicMaterial( { color: 0xffffff } )
+				)
+				cube2.position.x = 5;
+				cube2.position.y = 280;
+				cube2.position.z = -140;
+				cube2.rotation.z = Math.PI / 2;
+
+				const cube3 = new THREE.Mesh(
+					new THREE.BoxGeometry( 120, 9, 1 ),
+					new THREE.MeshBasicMaterial( { color: 0xffffff } )
+				)
+				cube3.position.x = 5;
+				cube3.position.y = 265;
+				cube3.position.z = -140;
+				cube3.rotation.z = Math.PI / 2;*/
+
+				// RENDERER
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+				// EVENTS
+
+				container.style.touchAction = 'none';
+
+				window.addEventListener( 'resize', onWindowResize );
+
+			}
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function createText() {
+
+				textGeo = new THREE.TextGeometry( text, {
+
+					font: font,
+
+					size: size,
+					height: height,
+					curveSegments: curveSegments,
+
+					bevelThickness: bevelThickness,
+					bevelSize: bevelSize,
+					bevelEnabled: true
+
+				} );
+
+				textGeo.computeBoundingBox();
+				textGeo.computeVertexNormals();
+
+				const centerOffset = - 0.5 * ( textGeo.boundingBox.max.x - textGeo.boundingBox.min.x );
+
+				textMesh1 = new THREE.Mesh( textGeo, material );
+
+				textMesh1.position.x = centerOffset;
+				textMesh1.position.y = hover;
+				textMesh1.position.z = far;
+
+				textMesh1.rotation.x = angle;
+				textMesh1.rotation.y = Math.PI * 2;
+
+				group.add( textMesh1 );
+
+			}
+
+			//
+			
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				//Math.sin( Math.PI * getSeconds() / 30
+
+				camera.lookAt( cameraTarget );
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>
